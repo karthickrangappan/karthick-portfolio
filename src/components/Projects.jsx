@@ -46,6 +46,15 @@ export function Projects() {
       tags: ["React", "API", "Auth"],
       accentColor: "#ff4d8d"
     },
+    {
+      title: "Dress Shop",
+      category: "Website",
+      img: "../projects img/projects (5).png",
+      link: "https://dress-shop-main.vercel.app/",
+      source: "https://github.com/karthickrangappan/Dress-shop-main",
+      tags: ["React", "E-Commerce", "Tailwind"],
+      accentColor: "#ec4899"
+    },
   ];
 
   const filteredProjects = active === "All" ? projects : projects.filter((p) => p.category === active);
