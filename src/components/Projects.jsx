@@ -1,167 +1,349 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Eye, ExternalLink, X, ArrowUpRight } from "lucide-react";
+
+import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+  Eye,
+  ExternalLink,
+  X,
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { GithubIcon } from "./common/Icons";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
+
 import "swiper/css";
+
+const FILTERS = ["All", "Website", "UI/UX"];
+
+const PROJECTS = [
+  {
+    title: "E-Commerce Dry Fruits",
+    category: "Website",
+    img: "../projects img/projects (3).png",
+    link: "https://dry-fruits-rho.vercel.app/",
+    source: "https://github.com/karthickrangappan/Dry-Fruits",
+    tags: ["React", "Tailwind", "Firebase"],
+    accentColor: "#7c5cfc",
+    description: "An e-commerce website for browsing dry fruit products.",
+  },
+  {
+    title: "Shopping Platform",
+    category: "UI/UX",
+    img: "../projects img/projects (2).png",
+    link: "https://bicycle-shop-beta.vercel.app/",
+    source: "https://github.com/karthickrangappan/Bicycle-Shop",
+    tags: ["Vite", "Commerce.js", "Stripe"],
+    accentColor: "#00b8d4",
+    description:
+      "A shopping platform focused on product presentation and user experience.",
+  },
+  {
+    title: "E-Commerce Sports",
+    category: "Website",
+    img: "../projects img/projects (1).png",
+    link: "https://sports-gamma-rouge.vercel.app/",
+    source: "https://github.com/karthickrangappan/Sports",
+    tags: ["React", "Redux", "Node.js"],
+    accentColor: "#f5a623",
+    description:
+      "A sports e-commerce project with a modern shopping interface.",
+  },
+  {
+    title: "Fast Food",
+    category: "Website",
+    img: "../projects img/projects (4).png",
+    link: "https://feane-fast-food.vercel.app/",
+    source: "https://github.com/karthickrangappan/Feane-fast-food",
+    tags: ["React", "API", "Auth"],
+    accentColor: "#ff4d8d",
+    description: "A responsive restaurant website with a modern interface.",
+  },
+  {
+    title: "Dress Shop",
+    category: "Website",
+    img: "../projects img/projects (5).png",
+    link: "https://dress-shop-main.vercel.app/",
+    source: "https://github.com/karthickrangappan/Dress-shop-main",
+    tags: ["React", "E-Commerce", "Tailwind"],
+    accentColor: "#ec4899",
+    description:
+      "A fashion shopping website with a modern clothing-store design.",
+  },
+];
+
+// Same fade-up animation style as the Skills page.
+const projectCardVariants = {
+  hidden: {
+    opacity: 0,
+    y: 35,
+  },
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      delay: index * 0.08,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
 
 export function Projects() {
   const [active, setActive] = useState("All");
   const [quickView, setQuickView] = useState(null);
-  const [swiperInstance, setSwiperInstance] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(true);
 
-  const filters = ["All", "Website", "UI/UX"];
+  const swiperRef = useRef(null);
+  const sectionRef = useRef(null);
+  const resumeTimer = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previousFocusedElement = useRef(null);
+  const previousOverflow = useRef("");
 
-  /* =========================================================
-     PROJECT DATA
-  ========================================================= */
-  const projects = [
-    {
-      title: "E-Commerce Dry Fruits",
-      category: "Website",
-      img: "../projects img/projects (3).png",
-      link: "https://dry-fruits-rho.vercel.app/",
-      source: "https://github.com/karthickrangappan/Dry-Fruits",
-      tags: ["React", "Tailwind", "Firebase"],
-      accentColor: "#7c5cfc",
-    },
-    {
-      title: "Shopping Platform",
-      category: "UI/UX",
-      img: "../projects img/projects (2).png",
-      link: "https://bicycle-shop-beta.vercel.app/",
-      source: "https://github.com/karthickrangappan/Bicycle-Shop",
-      tags: ["Vite", "Commerce.js", "Stripe"],
-      accentColor: "#00e5ff",
-    },
-    {
-      title: "E-Commerce Sports",
-      category: "Website",
-      img: "../projects img/projects (1).png",
-      link: "https://sports-gamma-rouge.vercel.app/",
-      source: "https://github.com/karthickrangappan/Sports",
-      tags: ["React", "Redux", "Node.js"],
-      accentColor: "#f5a623",
-    },
-    {
-      title: "Fast Food",
-      category: "Website",
-      img: "../projects img/projects (4).png",
-      link: "https://feane-fast-food.vercel.app/",
-      source: "https://github.com/karthickrangappan/Feane-fast-food",
-      tags: ["React", "API", "Auth"],
-      accentColor: "#ff4d8d",
-    },
-    {
-      title: "Dress Shop",
-      category: "Website",
-      img: "../projects img/projects (5).png",
-      link: "https://dress-shop-main.vercel.app/",
-      source: "https://github.com/karthickrangappan/Dress-shop-main",
-      tags: ["React", "E-Commerce", "Tailwind"],
-      accentColor: "#ec4899",
-    },
-  ];
+  const isVisible = useRef(false);
+  const isTabVisible = useRef(
+    typeof document !== "undefined" ? !document.hidden : true
+  );
+  const isHovered = useRef(false);
+  const manuallyPaused = useRef(false);
 
-  /* =========================================================
-     FILTER LOGIC
-  ========================================================= */
-  const filteredProjects =
-    active === "All"
-      ? projects
-      : projects.filter((project) => project.category === active);
+  const prefersReducedMotion = useReducedMotion();
+
+  const filteredProjects = useMemo(
+    () =>
+      active === "All"
+        ? PROJECTS
+        : PROJECTS.filter((project) => project.category === active),
+    [active]
+  );
 
   const hasMultipleCards = filteredProjects.length > 1;
 
-  const infiniteProjects = hasMultipleCards
-    ? [
-        ...filteredProjects,
-        ...filteredProjects,
-        ...filteredProjects,
-        ...filteredProjects,
-      ]
-    : filteredProjects;
+  const clearResumeTimer = () => {
+    if (resumeTimer.current !== null) {
+      clearTimeout(resumeTimer.current);
+      resumeTimer.current = null;
+    }
+  };
 
-  /* Lock body scroll when modal is open */
+  const syncAutoplay = () => {
+    const swiper = swiperRef.current;
+
+    if (!swiper || swiper.destroyed || !swiper.autoplay) return;
+
+    const shouldPlay =
+      hasMultipleCards &&
+      isVisible.current &&
+      isTabVisible.current &&
+      !isHovered.current &&
+      !manuallyPaused.current &&
+      !quickView &&
+      !prefersReducedMotion &&
+      !resumeTimer.current;
+
+    if (shouldPlay) {
+      swiper.autoplay.start();
+    } else {
+      swiper.autoplay.stop();
+    }
+  };
+
+  // Reset the carousel after changing categories.
   useEffect(() => {
-    document.body.style.overflow = quickView ? "hidden" : "unset";
+    clearResumeTimer();
+
+    const swiper = swiperRef.current;
+
+    if (!swiper || swiper.destroyed) return;
+
+    swiper.autoplay?.stop();
+
+    if (swiper.params.loop && hasMultipleCards) {
+      swiper.slideToLoop(0, 0);
+    } else {
+      swiper.slideTo(0, 0);
+    }
+
+    syncAutoplay();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, hasMultipleCards]);
+
+  useEffect(() => {
+    syncAutoplay();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickView, prefersReducedMotion]);
+
+  // Pause autoplay when the section leaves the viewport.
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible.current = entry.isIntersecting;
+        syncAutoplay();
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(section);
+
+    return () => observer.disconnect();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Pause autoplay when the browser tab is hidden.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isTabVisible.current = !document.hidden;
+      syncAutoplay();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () =>
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Close Quick View with Escape.
+  useEffect(() => {
+    if (!quickView) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setQuickView(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () =>
+      document.removeEventListener("keydown", handleKeyDown);
+  }, [quickView]);
+
+  // Manage modal scrolling and restore keyboard focus.
+  useEffect(() => {
+    if (quickView) {
+      previousFocusedElement.current = document.activeElement;
+      previousOverflow.current = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+
+      requestAnimationFrame(() => closeButtonRef.current?.focus());
+    } else {
+      document.body.style.overflow = previousOverflow.current;
+      previousFocusedElement.current?.focus?.();
+      previousFocusedElement.current = null;
+    }
+
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = previousOverflow.current;
     };
   }, [quickView]);
 
-  /* Handle filter change */
   useEffect(() => {
-    if (!swiperInstance) return;
+    return () => {
+      clearResumeTimer();
+      swiperRef.current?.autoplay?.stop();
+      swiperRef.current = null;
+    };
+  }, []);
 
-    if (swiperInstance.autoplay) {
-      swiperInstance.autoplay.stop();
+  // Previous and Next navigation.
+  const navigateProjects = (direction) => {
+    const swiper = swiperRef.current;
+
+    if (!swiper || swiper.destroyed || !hasMultipleCards) return;
+
+    clearResumeTimer();
+    swiper.autoplay?.stop();
+
+    if (direction === "prev") {
+      swiper.slidePrev(500);
+    } else {
+      swiper.slideNext(500);
     }
 
-    if (!hasMultipleCards) {
-      swiperInstance.slideTo(0, 0);
-    }
-  }, [active, hasMultipleCards, swiperInstance]);
+    resumeTimer.current = setTimeout(() => {
+      resumeTimer.current = null;
+      syncAutoplay();
+    }, 1200);
+  };
+
+  const toggleAutoplay = () => {
+    clearResumeTimer();
+
+    manuallyPaused.current = !manuallyPaused.current;
+    setIsPlaying(!manuallyPaused.current);
+
+    syncAutoplay();
+  };
 
   const handleMouseEnter = () => {
-    if (hasMultipleCards && swiperInstance?.autoplay) {
-      swiperInstance.autoplay.stop();
-    }
+    isHovered.current = true;
+    syncAutoplay();
   };
 
   const handleMouseLeave = () => {
-    if (hasMultipleCards && swiperInstance?.autoplay) {
-      swiperInstance.autoplay.start();
-    }
+    isHovered.current = false;
+    syncAutoplay();
   };
 
-  const handleFilterChange = (filter) => {
-    if (swiperInstance?.autoplay) {
-      swiperInstance.autoplay.stop();
-    }
-    setActive(filter);
-  };
+  const openQuickView = (project) => setQuickView(project);
+  const closeQuickView = () => setQuickView(null);
 
   return (
     <>
-      {/* =====================================================
-          PROJECTS SECTION
-      ===================================================== */}
       <section
         id="projects"
-        className="relative overflow-hidden bg-white py-16 sm:py-20 md:py-24 lg:py-28"
+        ref={sectionRef}
+        className="relative overflow-hidden bg-white py-12 sm:py-16 md:py-20 lg:py-24"
       >
-        {/* BACKGROUND GLOWS */}
+        {/* Background decorations */}
         <div
-          className="pointer-events-none absolute -left-40 top-20 h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full blur-[100px] sm:blur-[130px]"
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-40 top-20 h-[350px] w-[350px] rounded-full blur-[90px] sm:h-[450px] sm:w-[450px]"
           style={{
             background:
-              "radial-gradient(circle, rgba(124,92,252,.12), transparent 70%)",
-          }}
-        />
-        <div
-          className="pointer-events-none absolute -right-40 bottom-20 h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full blur-[100px] sm:blur-[130px]"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(0,229,255,.10), transparent 70%)",
+              "radial-gradient(circle, rgba(124,92,252,.10), transparent 70%)",
           }}
         />
 
-        {/* CONTAINER */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-40 bottom-20 h-[350px] w-[350px] rounded-full blur-[90px] sm:h-[450px] sm:w-[450px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(0,184,212,.08), transparent 70%)",
+          }}
+        />
+
+        {/* Heading and filters */}
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 md:px-12 lg:px-20 xl:px-28">
-          {/* HEADER */}
-          <div className="mb-10 sm:mb-12 lg:mb-16 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            {/* TITLE */}
+          <div className="mb-8 flex flex-col gap-5 sm:mb-10 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
             <motion.div
-              initial={{ opacity: 0, x: -25 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{
+                duration: prefersReducedMotion ? 0 : 0.7,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
               <span className="section-label">My Work</span>
+
               <h2
-                className="mt-2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900"
+                className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl"
                 style={{ fontFamily: "Syne, sans-serif" }}
               >
                 Featured{" "}
@@ -169,237 +351,273 @@ export function Projects() {
                   className="bg-clip-text text-transparent"
                   style={{
                     backgroundImage:
-                      "linear-gradient(135deg, #7c5cfc, #00e5ff)",
+                      "linear-gradient(135deg, #7c5cfc, #00b8d4)",
                   }}
                 >
                   Work
                 </span>
               </h2>
-              <p
-                className="mt-2.5 sm:mt-4 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-slate-500"
-                style={{ fontFamily: "DM Sans, sans-serif" }}
-              >
-                Digital solutions built with precision, passion, and modern engineering.
+
+              <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-500 sm:mt-3 sm:text-sm md:text-base">
+                Digital solutions built with precision, passion, and modern
+                engineering.
               </p>
             </motion.div>
 
-            {/* FILTERS */}
-            <motion.div
-              initial={{ opacity: 0, x: 25 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="flex w-full sm:w-auto self-start lg:self-auto rounded-full border border-slate-200 bg-white p-1 sm:p-1.5 shadow-sm"
+            {/* Category filters */}
+            <div
+              className="flex w-full self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:w-auto sm:p-1.5 lg:self-auto"
+              role="group"
+              aria-label="Filter projects by category"
             >
-              {filters.map((item) => (
+              {FILTERS.map((filter) => (
                 <button
-                  key={item}
+                  key={filter}
                   type="button"
-                  onClick={() => handleFilterChange(item)}
-                  className="relative flex-1 sm:flex-initial text-center whitespace-nowrap rounded-full px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold transition-all duration-300"
-                  style={{
-                    color: active === item ? "#ffffff" : "#64748b",
-                    fontFamily: "DM Sans, sans-serif",
-                  }}
+                  onClick={() => setActive(filter)}
+                  aria-pressed={active === filter}
+                  className={`flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-bold transition-colors duration-200 sm:flex-initial sm:px-6 sm:text-sm ${
+                    active === filter
+                      ? "bg-violet-600 text-white shadow-md"
+                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
                 >
-                  {active === item && (
-                    <motion.div
-                      layoutId="project-filter"
-                      className="absolute inset-0 rounded-full"
-                      style={{
-                        background: "linear-gradient(135deg,#7c5cfc,#00e5ff)",
-                        boxShadow: "0 4px 15px rgba(124,92,252,.3)",
-                      }}
-                    />
-                  )}
-                  <span className="relative z-10">{item}</span>
+                  {filter}
                 </button>
               ))}
-            </motion.div>
+            </div>
           </div>
         </div>
 
-        {/* FULL WIDTH SLIDER */}
-        <div
-          className={`project-free-wrapper ${
-            !hasMultipleCards ? "single-project" : ""
-          }`}
-        >
+        {/* Single-card project carousel */}
+        <div className="relative mx-auto w-full max-w-5xl overflow-hidden px-4 sm:px-6">
           <Swiper
+            key={active}
             modules={[Autoplay]}
             onSwiper={(swiper) => {
-              setSwiperInstance(swiper);
+              swiperRef.current = swiper;
+              syncAutoplay();
             }}
+            slidesPerView={1}
+            centeredSlides={false}
+            loop={hasMultipleCards}
+            rewind={false}
+            grabCursor={hasMultipleCards}
             autoplay={
-              hasMultipleCards
+              hasMultipleCards && !prefersReducedMotion
                 ? {
-                    delay: 0,
+                    delay: 2200,
                     disableOnInteraction: false,
                     pauseOnMouseEnter: false,
-                    stopOnLastSlide: false,
                   }
                 : false
             }
-            speed={hasMultipleCards ? 5000 : 0}
-            loop={hasMultipleCards}
-            loopAdditionalSlides={
-              hasMultipleCards ? filteredProjects.length * 2 : 0
-            }
-            slidesPerView="auto"
-            centeredSlides={!hasMultipleCards}
-            spaceBetween={hasMultipleCards ? 20 : 0}
-            breakpoints={{
-              640: {
-                spaceBetween: hasMultipleCards ? 24 : 0,
-              },
-              1024: {
-                spaceBetween: hasMultipleCards ? 30 : 0,
-              },
-            }}
+            speed={500}
+            spaceBetween={0}
             allowTouchMove={hasMultipleCards}
-            grabCursor={hasMultipleCards}
-            watchOverflow={!hasMultipleCards}
-            className="project-free-swiper"
+            watchOverflow
+            className="!w-full"
           >
-            {infiniteProjects.map((project, index) => (
+            {filteredProjects.map((project, index) => (
               <SwiperSlide
-                key={`${project.title}-${index}`}
-                className={`project-free-slide ${
-                  !hasMultipleCards ? "single-project-slide" : ""
-                }`}
+                key={project.title}
+                className="!h-auto !w-full"
               >
-                <div
-                  className="project-free-card"
+                {/* Scroll reveal animation applied to each project card */}
+                <motion.article
+                  custom={index}
+                  variants={projectCardVariants}
+                  initial={prefersReducedMotion ? false : "hidden"}
+                  whileInView="visible"
+                  viewport={{
+                    once: true,
+                    margin: "-80px",
+                  }}
+                  className="project-card group relative mx-auto aspect-[16/10] w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg transition-shadow duration-300 hover:shadow-xl sm:aspect-[16/8] sm:rounded-3xl"
                   style={{ "--accent": project.accentColor }}
-                  onMouseEnter={hasMultipleCards ? handleMouseEnter : undefined}
-                  onMouseLeave={hasMultipleCards ? handleMouseLeave : undefined}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
                 >
-                  {/* PROJECT IMAGE */}
+                  {/* Website screenshot */}
                   <img
                     src={project.img}
-                    alt={project.title}
-                    className="project-free-image"
-                    draggable="false"
+                    alt={`${project.title} website preview`}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    decoding="async"
+                    draggable={false}
+                    className="absolute inset-0 h-full w-full object-cover object-center"
                   />
 
-                  {/* OVERLAY */}
-                  <div className="project-free-overlay" />
+                  {/* Bottom gradient */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-3/5 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent"
+                  />
 
-                  {/* COLOR GLOW */}
-                  <div className="project-free-glow" />
-
-                  {/* TOP BAR */}
-                  <div className="project-free-top">
-                    <span className="project-free-category">
+                  {/* Category and Quick View */}
+                  <div className="absolute left-3 right-3 top-3 z-10 flex items-center justify-between sm:left-5 sm:right-5 sm:top-5">
+                    <span className="rounded-full border border-white/25 bg-slate-900/80 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white backdrop-blur-md sm:text-[10px]">
                       {project.category}
                     </span>
+
                     <button
                       type="button"
-                      onClick={() => setQuickView(project)}
-                      className="project-free-eye"
-                      aria-label={`View ${project.title}`}
+                      onClick={() => openQuickView(project)}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/25 bg-slate-900/80 text-white backdrop-blur-md transition-colors hover:bg-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-10 sm:w-10"
+                      aria-label={`View details for ${project.title}`}
                     >
                       <Eye size={18} />
                     </button>
                   </div>
 
-                  {/* BOTTOM CONTENT */}
-                  <div className="project-free-content">
-                    {/* TAGS */}
-                    <div className="project-free-tags">
+                  {/* Project details */}
+                  <div className="absolute inset-x-0 bottom-0 z-[2] p-3 sm:p-5 md:p-6">
+                    <div className="mb-1.5 flex flex-wrap gap-1 sm:mb-2 sm:gap-1.5">
                       {project.tags.map((tag) => (
-                        <span key={tag}>{tag}</span>
+                        <span
+                          key={tag}
+                          className="rounded-md border px-1.5 py-0.5 text-[8px] font-bold text-white sm:px-2 sm:py-1 sm:text-[10px]"
+                          style={{
+                            background: `${project.accentColor}b3`,
+                            borderColor: project.accentColor,
+                          }}
+                        >
+                          {tag}
+                        </span>
                       ))}
                     </div>
 
-                    {/* TITLE */}
-                    <h3>{project.title}</h3>
+                    <h3 className="mb-1 text-base font-black leading-tight text-white sm:mb-2 sm:text-xl md:text-2xl [font-family:Syne,sans-serif]">
+                      {project.title}
+                    </h3>
 
-                    {/* DESCRIPTION */}
-                    <p>
-                      Innovative {project.category.toLowerCase()} solution built
-                      for seamless user interactions and high performance.
+                    <p className="mb-2 line-clamp-2 max-w-xl text-[10px] leading-relaxed text-white/90 sm:mb-3 sm:text-xs md:text-sm">
+                      {project.description}
                     </p>
 
-                    {/* ACTIONS */}
-                    <div className="project-free-actions">
+                    <div className="flex flex-wrap items-center gap-2">
                       <a
                         href={project.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="project-free-live"
+                        className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-[10px] font-extrabold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:min-h-10 sm:gap-1.5 sm:rounded-xl sm:px-4 sm:py-2 sm:text-xs"
                         style={{ background: project.accentColor }}
                       >
                         Live Preview
-                        <ArrowUpRight size={15} />
+                        <ArrowUpRight size={14} />
                       </a>
 
                       <button
                         type="button"
-                        onClick={() => setQuickView(project)}
-                        className="project-free-quick"
-                        aria-label={`Quick view ${project.title}`}
+                        onClick={() => openQuickView(project)}
+                        className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border border-white/40 bg-slate-900/40 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:min-h-10 sm:rounded-xl sm:px-4 sm:py-2 sm:text-xs"
+                        aria-label={`More details about ${project.title}`}
                       >
-                        <Eye size={16} />
+                        <Eye size={14} />
+                        Details
                       </button>
                     </div>
                   </div>
-                </div>
+                </motion.article>
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
+
+        {/* Carousel controls */}
+        {hasMultipleCards && (
+          <div className="relative z-10 mt-5 flex flex-wrap items-center justify-center gap-3 pb-3 sm:mt-6 sm:gap-4">
+            <button
+              type="button"
+              onClick={() => navigateProjects("prev")}
+              aria-label="Previous project"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 shadow-sm transition-colors hover:bg-violet-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            >
+              <ChevronLeft size={22} />
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleAutoplay}
+              aria-pressed={!isPlaying}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[10px] font-bold text-slate-600 transition-colors hover:bg-slate-100 sm:text-xs"
+            >
+              {isPlaying ? "Pause motion" : "Resume motion"}
+            </button>
+
+            <span className="hidden text-[10px] font-bold tracking-[0.15em] text-slate-400 sm:inline sm:text-xs">
+              EXPLORE PROJECTS
+            </span>
+
+            <button
+              type="button"
+              onClick={() => navigateProjects("next")}
+              aria-label="Next project"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 shadow-sm transition-colors hover:bg-violet-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+        )}
       </section>
 
-      {/* =====================================================
-          QUICK VIEW MODAL (RESPONSIVE)
-      ===================================================== */}
+      {/* Quick View modal */}
       <AnimatePresence>
         {quickView && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex min-h-full items-center justify-center overflow-y-auto p-3 sm:p-6 md:p-8"
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+            className="fixed inset-0 z-[100] flex min-h-full items-center justify-center overflow-y-auto p-3 sm:p-6"
           >
-            {/* BACKDROP */}
-            <div
-              className="fixed inset-0 bg-slate-950/70 backdrop-blur-md"
-              onClick={() => setQuickView(null)}
+            <button
+              type="button"
+              className="fixed inset-0 cursor-default bg-slate-950/70 backdrop-blur-sm"
+              onClick={closeQuickView}
+              aria-label="Close project details"
+              tabIndex={-1}
             />
 
-            {/* MODAL CARD */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 20 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="project-modal-title"
+              initial={
+                prefersReducedMotion
+                  ? false
+                  : { opacity: 0, scale: 0.98, y: 10 }
+              }
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="relative z-10 my-auto w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-[28px] bg-white shadow-2xl"
+              exit={{ opacity: 0, scale: 0.98, y: 10 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+              className="relative z-10 my-auto max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl sm:rounded-[28px]"
             >
-              {/* CLOSE BUTTON */}
               <button
+                ref={closeButtonRef}
                 type="button"
-                onClick={() => setQuickView(null)}
-                className="absolute right-3.5 top-3.5 sm:right-5 sm:top-5 z-20 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white/90 backdrop-blur shadow-md transition-all duration-300 hover:scale-110 active:scale-95 text-rose-500 hover:bg-rose-50"
+                onClick={closeQuickView}
+                className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-md transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 sm:right-5 sm:top-5"
                 aria-label="Close modal"
               >
-                <X size={18} />
+                <X size={19} />
               </button>
 
               <div className="grid lg:grid-cols-2">
-                {/* MODAL IMAGE */}
-                <div className="flex min-h-[190px] sm:min-h-[260px] lg:min-h-[440px] items-center justify-center bg-slate-50 p-4 sm:p-6 lg:p-8">
+                <div className="flex min-h-[200px] items-center justify-center bg-slate-50 p-4 sm:min-h-[280px] sm:p-6 lg:min-h-[440px] lg:p-8">
                   <img
                     src={quickView.img}
-                    alt={quickView.title}
-                    className="max-h-[220px] sm:max-h-[320px] lg:max-h-[420px] w-full rounded-xl sm:rounded-2xl object-contain shadow-lg"
+                    alt={`${quickView.title} website preview`}
+                    loading="eager"
+                    decoding="async"
+                    className="max-h-[220px] w-full rounded-xl object-contain sm:max-h-[320px] lg:max-h-[420px]"
                   />
                 </div>
 
-                {/* MODAL CONTENT */}
-                <div className="flex flex-col justify-center p-5 sm:p-8 md:p-10 lg:p-12">
+                <div className="flex flex-col justify-center p-5 sm:p-8 md:p-10">
                   <span
-                    className="mb-3 inline-block w-fit rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider"
+                    className="mb-3 inline-block w-fit rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
                     style={{
                       color: quickView.accentColor,
                       background: `${quickView.accentColor}15`,
@@ -410,25 +628,22 @@ export function Projects() {
                   </span>
 
                   <h3
-                    className="mb-3 sm:mb-4 text-2xl sm:text-3xl font-black leading-tight text-slate-900"
+                    id="project-modal-title"
+                    className="mb-3 text-2xl font-black leading-tight text-slate-900 sm:text-3xl"
                     style={{ fontFamily: "Syne, sans-serif" }}
                   >
                     {quickView.title}
                   </h3>
 
-                  <p
-                    className="mb-5 sm:mb-6 text-xs sm:text-sm md:text-base leading-relaxed text-slate-500"
-                    style={{ fontFamily: "DM Sans, sans-serif" }}
-                  >
-                    Detailed view of the project architecture and implementation. Built with modern web standards and optimized for performance, responsiveness, and seamless accessibility across all screen sizes.
+                  <p className="mb-5 text-sm leading-relaxed text-slate-500 sm:text-base">
+                    {quickView.description}
                   </p>
 
-                  {/* TAGS */}
-                  <div className="mb-6 sm:mb-8 flex flex-wrap gap-1.5 sm:gap-2">
+                  <div className="mb-6 flex flex-wrap gap-2">
                     {quickView.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-lg px-2.5 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold"
+                        className="rounded-lg px-3 py-1.5 text-xs font-bold"
                         style={{
                           color: quickView.accentColor,
                           background: `${quickView.accentColor}12`,
@@ -440,20 +655,18 @@ export function Projects() {
                     ))}
                   </div>
 
-                  {/* ACTION BUTTONS */}
-                  <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <a
                       href={quickView.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-1 items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-5 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                       style={{
                         background:
                           "linear-gradient(135deg,#7c5cfc,#00b8d4)",
-                        boxShadow: "0 8px 25px rgba(124,92,252,.25)",
                       }}
                     >
-                      <span>Visit Project</span>
+                      Visit Project
                       <ExternalLink size={15} />
                     </a>
 
@@ -461,9 +674,9 @@ export function Projects() {
                       href={quickView.source}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-1 items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-slate-200 bg-white px-5 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-slate-700 transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:text-violet-600 active:scale-95"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                     >
-                      <span>Source Code</span>
+                      Source Code
                       <GithubIcon className="h-4 w-4" />
                     </a>
                   </div>
@@ -473,418 +686,6 @@ export function Projects() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* =====================================================
-          ENHANCED RESPONSIVE CSS
-      ===================================================== */}
-      <style>{`
-        .project-free-wrapper {
-          width: 100%;
-          position: relative;
-          overflow: hidden;
-          padding: 10px 0 35px;
-        }
-
-        .project-free-wrapper.single-project {
-          display: flex;
-          justify-content: center;
-          padding-left: 16px;
-          padding-right: 16px;
-        }
-
-        .project-free-swiper {
-          width: 100%;
-          padding: 20px 0 30px !important;
-          overflow: visible !important;
-        }
-
-        .single-project .project-free-swiper {
-          width: 100%;
-          max-width: 540px;
-          margin: 0 auto;
-        }
-
-        /* Slide sizing across viewports */
-        .project-free-slide {
-          width: 520px !important;
-          height: auto !important;
-          flex-shrink: 0;
-          align-self: flex-start;
-        }
-
-        .single-project-slide {
-          width: 100% !important;
-          max-width: 540px !important;
-          margin: 0 auto !important;
-        }
-
-        @media (min-width: 1600px) {
-          .project-free-slide {
-            width: 580px !important;
-          }
-        }
-
-        @media (max-width: 1200px) {
-          .project-free-slide {
-            width: 460px !important;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .project-free-slide {
-            width: 380px !important;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .project-free-slide {
-            width: min(320px, calc(100vw - 36px)) !important;
-          }
-        }
-
-        /* Card Styles */
-        .project-free-card {
-          position: relative;
-          width: 100%;
-          height: auto;
-          overflow: hidden;
-          border-radius: 24px;
-          background: #f8fafc;
-          border: 1px solid rgba(15, 23, 42, 0.08);
-          box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
-          isolation: isolate;
-          cursor: grab;
-          user-select: none;
-          transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
-        }
-
-        @media (min-width: 640px) {
-          .project-free-card {
-            border-radius: 28px;
-          }
-        }
-
-        .single-project .project-free-card {
-          cursor: default;
-        }
-
-        .project-free-card:active {
-          cursor: grabbing;
-        }
-
-        .single-project .project-free-card:active {
-          cursor: default;
-        }
-
-        /* Card image */
-        .project-free-image {
-          position: relative;
-          display: block;
-          width: 100%;
-          height: auto;
-          max-width: 100%;
-          object-fit: contain;
-          object-position: center;
-          background: #f8fafc;
-          pointer-events: none;
-          user-select: none;
-          -webkit-user-drag: none;
-          transform: scale(1);
-          filter: brightness(1);
-          transition: transform 0.6s ease, filter 0.5s ease;
-        }
-
-        /* Desktop Hover: reveal effect */
-        @media (hover: hover) and (min-width: 769px) {
-          .project-free-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--accent);
-            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.2);
-          }
-
-          .project-free-card:hover .project-free-image {
-            transform: scale(1.02);
-            filter: brightness(0.5) contrast(1.05) saturate(1.08);
-          }
-
-          .project-free-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            opacity: 0;
-            background: linear-gradient(
-              to top,
-              rgba(2, 6, 23, 0.98) 0%,
-              rgba(2, 6, 23, 0.88) 38%,
-              rgba(2, 6, 23, 0.45) 70%,
-              rgba(2, 6, 23, 0.02) 100%
-            );
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-          }
-
-          .project-free-card:hover .project-free-overlay {
-            opacity: 1;
-          }
-
-          .project-free-glow {
-            position: absolute;
-            left: -20%;
-            right: -20%;
-            bottom: -30%;
-            height: 60%;
-            z-index: 2;
-            opacity: 0;
-            background: radial-gradient(ellipse, var(--accent), transparent 70%);
-            filter: blur(50px);
-            pointer-events: none;
-            transition: opacity 0.45s ease;
-          }
-
-          .project-free-card:hover .project-free-glow {
-            opacity: 0.25;
-          }
-
-          .project-free-top {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: opacity 0.35s ease, transform 0.35s ease;
-          }
-
-          .project-free-card:hover .project-free-top {
-            opacity: 1;
-            transform: translateY(0);
-          }
-
-          .project-free-content {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 8;
-            padding: 22px 26px 24px;
-            opacity: 0;
-            transform: translateY(18px);
-            pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-          }
-
-          .project-free-card:hover .project-free-content {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-          }
-        }
-
-        /* Mobile & Touch Devices: Persistent Elegant Overlay & Direct Actions */
-        @media (max-width: 768px), (hover: none) {
-          .project-free-card {
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
-          }
-
-          .project-free-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            opacity: 1;
-            background: linear-gradient(
-              to top,
-              rgba(2, 6, 23, 0.96) 0%,
-              rgba(2, 6, 23, 0.85) 45%,
-              rgba(2, 6, 23, 0.35) 75%,
-              rgba(2, 6, 23, 0.05) 100%
-            );
-            pointer-events: none;
-          }
-
-          .project-free-glow {
-            display: none;
-          }
-
-          .project-free-top {
-            position: absolute;
-            top: 12px;
-            left: 14px;
-            right: 14px;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            opacity: 1;
-            transform: none;
-          }
-
-          .project-free-content {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 8;
-            padding: 14px 16px 16px;
-            opacity: 1;
-            transform: none;
-            pointer-events: auto;
-          }
-
-          .project-free-content p {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            font-size: 10px !important;
-            line-height: 1.4 !important;
-            margin-bottom: 10px !important;
-          }
-        }
-
-        /* Category pill */
-        .project-free-category {
-          padding: 6px 12px;
-          border-radius: 999px;
-          color: white;
-          background: rgba(15, 23, 42, 0.75);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-        }
-
-        /* Eye button */
-        .project-free-eye {
-          width: 38px;
-          height: 38px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          border-radius: 11px;
-          color: white;
-          background: rgba(15, 23, 42, 0.75);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          cursor: pointer;
-          transition: transform 0.25s ease, background 0.25s ease;
-        }
-
-        .project-free-eye:hover {
-          transform: scale(1.08);
-          background: var(--accent);
-        }
-
-        /* Content elements */
-        .project-free-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-          margin-bottom: 7px;
-        }
-
-        .project-free-tags span {
-          padding: 3px 8px;
-          border-radius: 6px;
-          color: var(--accent);
-          background: color-mix(in srgb, var(--accent) 15%, transparent);
-          border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-          font-size: 8.5px;
-          font-weight: 700;
-        }
-
-        .project-free-content h3 {
-          margin: 0 0 5px;
-          color: white;
-          font-family: "Syne", sans-serif;
-          font-size: 21px;
-          font-weight: 900;
-          line-height: 1.15;
-          letter-spacing: -0.02em;
-        }
-
-        @media (max-width: 480px) {
-          .project-free-content h3 {
-            font-size: 17px;
-          }
-        }
-
-        .project-free-content p {
-          margin: 0 0 12px;
-          max-width: 500px;
-          color: rgba(226, 232, 240, 0.85);
-          font-family: "DM Sans", sans-serif;
-          font-size: 11px;
-          line-height: 1.45;
-        }
-
-        .project-free-actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .project-free-live {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-          padding: 8px 14px;
-          min-height: 36px;
-          border-radius: 10px;
-          color: white;
-          font-size: 11px;
-          font-weight: 800;
-          text-decoration: none;
-          white-space: nowrap;
-          transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .project-free-live:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-        }
-
-        .project-free-quick {
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          border-radius: 10px;
-          color: white;
-          background: rgba(255, 255, 255, 0.14);
-          border: 1px solid rgba(255, 255, 255, 0.25);
-          cursor: pointer;
-          transition: transform 0.25s ease, background 0.25s ease;
-        }
-
-        .project-free-quick:hover {
-          transform: scale(1.08);
-          background: rgba(255, 255, 255, 0.24);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .project-free-swiper .swiper-wrapper {
-            transition-duration: 0s !important;
-          }
-          .project-free-card,
-          .project-free-image,
-          .project-free-overlay,
-          .project-free-content,
-          .project-free-top {
-            transition-duration: 0s !important;
-          }
-        }
-      `}</style>
     </>
   );
 }

@@ -42,7 +42,17 @@
 }
 
 @layer base {
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   body {
     @apply bg-brand-bg text-brand-text antialiased selection:bg-brand-primary/30 selection:text-brand-accent;
     font-family: "DM Sans", ui-sans-serif, system-ui;

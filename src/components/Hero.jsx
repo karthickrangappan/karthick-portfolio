@@ -149,7 +149,7 @@ export function Hero() {
             {[
               { Icon: GithubIcon, href: "https://github.com/karthickrangappan" },
               { Icon: LinkedinIcon, href: "https://www.linkedin.com/in/karthick-r-270318v?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-              { Icon: Mail, href: "mailto:karthickrangappan@gmail.com" }
+              { Icon: Mail, href: "https://mail.google.com/mail/?view=cm&fs=1&to=karthickrangappan%40gmail.com" }
             ].map(({ Icon, href }, i) => (
               <a key={i} href={href} target="_blank" rel="noopener noreferrer"
                 className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 hover:-translate-y-1"

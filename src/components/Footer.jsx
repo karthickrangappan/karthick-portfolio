@@ -29,7 +29,7 @@ export function Footer() {
               {[
                 { icon: <GithubIcon className="w-4 h-4" />, href: "https://github.com/karthickrangappan" },
                 { icon: <LinkedinIcon className="w-4 h-4" />, href: "https://www.linkedin.com/in/karthick-r-270318v?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-                { icon: <Mail className="w-4 h-4" />, href: "mailto:karthickrangappan@gmail.com" }
+                { icon: <Mail className="w-4 h-4" />, href: "https://mail.google.com/mail/?view=cm&fs=1&to=karthickrangappan%40gmail.com" }
               ].map((item, i) => (
                 <a key={i} href={item.href} target="_blank" rel="noopener noreferrer"
                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:scale-110"
