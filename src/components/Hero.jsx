@@ -97,11 +97,15 @@ export function Hero() {
             <span className="section-label text-black" style={{ color: 'black' }}>Full Stack Developer</span>
           </motion.div>
 
-          <motion.h1 variants={itemVariants} className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-black tracking-tight mb-4 mt-3 leading-[0.95] text-blue-600" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <motion.h1
+            variants={itemVariants}
+            className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl font-black tracking-tight mb-4 mt-3 leading-[0.95] text-blue-600"
+            style={{ fontFamily: "Syne, sans-serif" }}
+          >
             I'm{" "}
             <span className="text-gradient">Karthick</span>
             <br />
-            {/* <span style={{ color: '#eceef5' }}>Rangappan</span> */}
+            <span className="text-gradient">Rangappan</span>
           </motion.h1>
 
           <motion.div variants={itemVariants} className="divider-gradient mb-6 max-w-xs md:ml-0 mx-auto"></motion.div>

@@ -1,5 +1,11 @@
 import { motion } from "framer-motion";
-import { GraduationCap, Briefcase, CheckCircle2 } from "lucide-react";
+import {
+  GraduationCap,
+  Briefcase,
+  CheckCircle2,
+  CalendarDays,
+  Building2,
+} from "lucide-react";
 
 export function Experience() {
   const education = [
@@ -20,7 +26,7 @@ export function Experience() {
       institution: "Government High School, Krishnagiri",
       period: "2019",
       result: "Percentage: 71.8%",
-    }
+    },
   ];
 
   const experience = [
@@ -28,89 +34,138 @@ export function Experience() {
       title: "React Developer Intern",
       company: "Qtechx Solution, Tirupattur",
       period: "Oct 2025 – Mar 2026",
-      description: "Developed and maintained e-commerce web applications using React.js and Tailwind CSS. Integrated Firebase for authentication and real-time database operations.",
+      description:
+        "Developed and maintained e-commerce web applications using React.js and Tailwind CSS. Integrated Firebase for authentication and real-time database operations.",
       skills: ["React 19", "Tailwind CSS", "Firebase"],
-      accent: "#7c5cfc"
+      accent: "violet",
     },
     {
       title: "Python Full Stack Intern",
       company: "QSpiders, Chennai",
       period: "Feb 2025 – Oct 2025",
-      description: "Gained hands-on experience in Python, SQL, and frontend technologies. Built responsive UI and worked on backend integration and full-stack workflows.",
+      description:
+        "Gained hands-on experience in Python, SQL, and frontend technologies. Built responsive UI and worked on backend integration and full-stack workflows.",
       skills: ["Python", "SQL", "Frontend"],
-      accent: "#00e5ff"
-    }
+      accent: "cyan",
+    },
+    {
+      title: "Web Development Intern",
+      company: "AMSOL IT PVT LTD, Chennai - Tiruvallur High Road",
+      period: "July 2026 – Current",
+      description:
+        "Developed responsive web applications using WordPress, PHP, React, and Next.js. Worked on UI/UX implementation, Tailwind CSS conversion, reusable components, navigation, page integration, and the Startup Founders Directory project.",
+      skills: ["XAMPP", "WordPress", "PHP", "Next.js", "Feather.js"],
+      accent: "blue",
+    },
+
   ];
 
   return (
-    <section id="experience" className="bg-white py-16 sm:py-24 md:py-32 px-6 md:px-12 lg:px-24 xl:px-32 relative overflow-hidden">
-      <div className="divider-gradient mb-12 sm:mb-20"></div>
-      <div className="max-w-7xl mx-auto">
+    <section
+      id="experience"
+      className="relative overflow-hidden bg-white px-4 py-16 sm:px-6 sm:py-20 md:px-12 md:py-28 lg:px-24 xl:px-32"
+    >
+      {/* Background */}
+      <div className="pointer-events-none absolute -left-40 top-20 h-80 w-80 rounded-full bg-violet-100/60 blur-[100px]" />
+      <div className="pointer-events-none absolute -right-40 bottom-20 h-80 w-80 rounded-full bg-cyan-100/50 blur-[100px]" />
 
-        {/* SECTION HEADER */}
-        <div className="flex flex-col items-center mb-12 sm:mb-16 md:mb-20 text-center">
+      <div className="relative z-10 mx-auto max-w-7xl">
+
+        {/* HEADER */}
+        <div className="mb-12 flex flex-col items-center text-center sm:mb-16 md:mb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="section-label">My journey</span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-gradient mt-2 mb-3 sm:mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>
-              Journey & Expertise
+            <span className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-violet-600 sm:text-xs">
+              My Journey
+            </span>
+
+            <h2
+              className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl"
+              style={{ fontFamily: "Syne, sans-serif" }}
+            >
+              Journey &{" "}
+              <span className="bg-gradient-to-r from-violet-500 to-cyan-400 bg-clip-text text-transparent">
+                Expertise
+              </span>
             </h2>
           </motion.div>
-          <div className="w-16 sm:w-20 h-1 rounded-full" style={{ background: 'linear-gradient(90deg, #7c5cfc, #00e5ff)' }}></div>
-            <p className="mt-4 sm:mt-6 max-w-2xl text-xs sm:text-sm md:text-base" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
+
+          <div className="mt-5 h-1 w-20 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" />
+
+          <p className="mt-5 max-w-2xl text-xs leading-6 text-slate-500 sm:text-sm md:text-base">
             A timeline of my academic milestones and professional experience.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-10 md:gap-16 relative">
-          {/* Center divider */}
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px opacity-20"
-            style={{ background: 'linear-gradient(to bottom, transparent, #7c5cfc, #00e5ff, transparent)' }}></div>
+        {/* TWO COLUMNS */}
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
 
           {/* EDUCATION */}
           <div>
-            <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-10">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, rgba(124,92,252,0.2), rgba(0,229,255,0.1))', border: '1px solid rgba(124,92,252,0.3)', color: '#a78bfa' }}>
-                <GraduationCap className="w-5 h-5" />
+            <div className="mb-8 flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 text-white shadow-lg shadow-violet-200">
+                <GraduationCap className="h-5 w-5" />
               </div>
-          <h3 className="text-xl sm:text-2xl font-black" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Education</h3>
+
+              <div>
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-violet-500">
+                  Academic Background
+                </span>
+                <h3
+                  className="text-xl font-black text-slate-900 sm:text-2xl"
+                  style={{ fontFamily: "Syne, sans-serif" }}
+                >
+                  Education
+                </h3>
+              </div>
             </div>
 
-            <div className="space-y-5 sm:space-y-6 relative pl-6">
-              <div className="absolute left-[6px] top-0 bottom-0 w-px" style={{ background: 'linear-gradient(to bottom, rgba(124,92,252,0.5), transparent)' }}></div>
+            <div className="relative space-y-5 pl-6">
+              <div className="absolute bottom-4 left-[5px] top-4 w-px bg-gradient-to-b from-violet-400 to-transparent" />
 
               {education.map((edu, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: -30 }}
+                  initial={{ opacity: 0, x: -25 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="relative group"
+                  className="group relative"
                 >
-                  <div className="timeline-dot" style={{ left: '-24px' }}></div>
+                  <div className="absolute -left-[27px] top-6 z-10 h-3.5 w-3.5 rounded-full border-[3px] border-white bg-violet-500 shadow-[0_0_0_3px_rgba(124,92,252,.12)] transition-transform group-hover:scale-125" />
 
-                  <div
-                    className="glass-card rounded-2xl p-5 sm:p-6"
-                    style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95))', border: '1px solid rgba(124,92,252,0.5)' }}
-                  >
-                    <div className="flex justify-between items-start mb-3 gap-3">
-                    <h4 className="text-sm sm:text-base md:text-lg font-bold transition-colors" style={{ fontFamily: 'Syne, sans-serif', color: '#ffffff' }}>
-                        {edu.title}
-                      </h4>
-                      <span className="text-xs font-bold px-3 py-1 rounded-lg shrink-0 whitespace-nowrap"
-                        style={{ background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.12)' }}>
+                  <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_35px_rgba(15,23,42,.05)] transition-all duration-500 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_20px_50px_rgba(15,23,42,.09)] sm:p-6">
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h4
+                          className="text-sm font-black leading-snug text-slate-900 sm:text-base md:text-lg"
+                          style={{ fontFamily: "Syne, sans-serif" }}
+                        >
+                          {edu.title}
+                        </h4>
+
+                        <div className="mt-2 flex gap-2 text-xs leading-5 text-slate-500 sm:text-sm">
+                          <Building2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-violet-400" />
+                          {edu.institution}
+                        </div>
+                      </div>
+
+                      <span className="flex w-fit items-center gap-1.5 rounded-xl border border-violet-100 bg-violet-50 px-3 py-1.5 text-[10px] font-bold text-violet-600">
+                        <CalendarDays className="h-3 w-3" />
                         {edu.period}
                       </span>
                     </div>
-                      <p className="text-xs sm:text-sm mb-3" style={{ color: '#cbd5e1', fontFamily: 'DM Sans, sans-serif' }}>{edu.institution}</p>
-                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold" style={{ color: '#7dd3fc' }}>
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {edu.result}
+
+                    <div className="mt-5 flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      {edu.result}
                     </div>
+
+                    <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-gradient-to-r from-violet-500 to-cyan-400 transition-all duration-500 group-hover:w-full" />
                   </div>
                 </motion.div>
               ))}
@@ -119,51 +174,77 @@ export function Experience() {
 
           {/* EXPERIENCE */}
           <div>
-            <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-10 mt-10 lg:mt-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, rgba(245,166,35,0.2), rgba(255,77,141,0.1))', border: '1px solid rgba(245,166,35,0.3)', color: '#f5a623' }}>
-                <Briefcase className="w-5 h-5" />
+            <div className="mb-8 flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-amber-400 text-white shadow-lg shadow-pink-100">
+                <Briefcase className="h-5 w-5" />
               </div>
-          <h3 className="text-xl sm:text-2xl font-black" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Work Experience</h3>
+
+              <div>
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-pink-500">
+                  Professional Background
+                </span>
+                <h3
+                  className="text-xl font-black text-slate-900 sm:text-2xl"
+                  style={{ fontFamily: "Syne, sans-serif" }}
+                >
+                  Work Experience
+                </h3>
+              </div>
             </div>
 
-            <div className="space-y-5 sm:space-y-6 relative pl-6">
-              <div className="absolute left-[6px] top-0 bottom-0 w-px" style={{ background: 'linear-gradient(to bottom, rgba(245,166,35,0.5), transparent)' }}></div>
+            <div className="relative space-y-5 pl-6">
+              <div className="absolute bottom-4 left-[5px] top-4 w-px bg-gradient-to-b from-pink-400 to-transparent" />
 
               {experience.map((exp, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: 30 }}
+                  initial={{ opacity: 0, x: 25 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="relative group"
+                  className="group relative"
                 >
-                  <div className="absolute w-[14px] h-[14px] rounded-full border-2 z-10"
-                    style={{ left: '-25px', top: '8px', background: exp.accent, borderColor: '#ffffff', boxShadow: `0 0 12px ${exp.accent}80` }}></div>
+                  <div className="absolute -left-[27px] top-6 z-10 h-3.5 w-3.5 rounded-full border-[3px] border-white bg-pink-500 shadow-[0_0_0_3px_rgba(255,77,141,.12)] transition-transform group-hover:scale-125" />
 
-                  <div className="glass-card rounded-2xl p-5 sm:p-7" style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95))', border: '1px solid rgba(124,92,252,0.5)' }}>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-3">
+                  <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_35px_rgba(15,23,42,.05)] transition-all duration-500 hover:-translate-y-1 hover:border-pink-200 hover:shadow-[0_20px_50px_rgba(15,23,42,.09)] sm:p-6">
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                      <h4 className="text-sm sm:text-base md:text-lg xl:text-xl font-black" style={{ fontFamily: 'Syne, sans-serif', color: '#ffffff' }}>{exp.title}</h4>
-                          <p className="text-xs sm:text-sm" style={{ color: '#cbd5e1', fontFamily: 'DM Sans, sans-serif' }}>{exp.company}</p>
+                        <h4
+                          className="text-sm font-black leading-snug text-slate-900 sm:text-base md:text-lg"
+                          style={{ fontFamily: "Syne, sans-serif" }}
+                        >
+                          {exp.title}
+                        </h4>
+
+                        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 sm:text-sm">
+                          <Building2 className="h-3.5 w-3.5 text-pink-400" />
+                          {exp.company}
+                        </div>
                       </div>
-                      <span className="inline-block text-xs font-bold px-4 py-1.5 rounded-xl self-start whitespace-nowrap"
-                        style={{ background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.12)' }}>
+
+                      <span className="flex w-fit items-center gap-1.5 rounded-xl border border-pink-100 bg-pink-50 px-3 py-1.5 text-[10px] font-bold text-pink-600">
+                        <CalendarDays className="h-3 w-3" />
                         {exp.period}
                       </span>
                     </div>
-                      <p className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 italic" style={{ color: '#cbd5e1', fontFamily: 'DM Sans, sans-serif' }}>
-                      "{exp.description}"
+
+                    <p className="mt-5 text-xs leading-6 text-slate-500 sm:text-sm">
+                      {exp.description}
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      {exp.skills.map(skill => (
-                        <span key={skill} className="text-xs font-bold px-3 py-1 rounded-lg"
-                          style={{ background: 'rgba(124,92,252,0.14)', color: '#cbd5e1', border: '1px solid rgba(124,92,252,0.22)' }}>
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {exp.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold text-slate-600 transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                        >
                           {skill}
                         </span>
                       ))}
                     </div>
+
+                    <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-gradient-to-r from-pink-500 to-amber-400 transition-all duration-500 group-hover:w-full" />
                   </div>
                 </motion.div>
               ))}
